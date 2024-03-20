@@ -26,20 +26,16 @@
             $('.select-dropdown.dropdown-trigger').click();
         }
 
-        function makeClocklist(timezones) {
+        function makeClocklist(timezones){
             var markup = '';
-            for (var i = 0; i < timezones.length; i++) {
+            for(var i = 0; i < timezones.length; i++){
                 var tz = timezones[i].split('_');
                 var tzOffset = tz[0];
-                var tzName = document.getElementById('timezone').options[document.getElementById('timezone').selectedIndex].text;
-                
-                var currentTime = new Date(Date.now() + tzOffset * 60 * 60 * 1000);
-                var hours = currentTime.getHours().toString().padStart(2, '0');
-                var minutes = currentTime.getMinutes().toString().padStart(2, '0');
-                var seconds = currentTime.getSeconds().toString().padStart(2, '0');
-                var timeString = hours + ':' + minutes + ':' + seconds;
-
-                markup += "<button class='btn white' style='width:100%;height:100px'> <div>Timezone: " + tzName + "</div> <div>Current Time: " + timeString + "</div> <iframe src='./clock.html#" + tzOffset + "'></iframe></button>";
+                var tzName = $(`#timezone option[value="${timezones[i]}"]`).text();
+                markup += `<div class='clock-container'>
+                                <h5>${tzName}</h5>
+                                <iframe src='./clock.html#${tzOffset}'></iframe>
+                            </div>`;
             }
             var clockList = document.getElementById('clockList');
             clockList.innerHTML = markup;
@@ -55,12 +51,12 @@
 
     <div id="modal1" class="modal">
         <div class="modal-content" style="padding:0">
-            <h4 id='modalTitle' onclick="event.preventDefault();" style="pointer-events: none">Manage Timezones</h4>
-            <select name="timezone" id="timezone" multiple>
-                <!-- Options here -->
-            </select>
+          <h4 id='modalTitle' onclick="event.preventDefault();" style="pointer-events: none">Manage Timezones</h4>
+          <select name="timezone" id="timezone" multiple>
+            <!-- Your timezone options -->
+          </select>
         </div>
-    </div>
+      </div>
 </body>
 <style>
     #clocks{
@@ -92,11 +88,17 @@
         min-width: 100% !important;
         box-shadow: none !important;
     }
-    #clockList button iframe{
-        transform: scale(calc(28/100));
-        transform-origin: 0 0;
-        height: 333px;
-        width: 333px;
+    .clock-container {
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+    .clock-container h5 {
+        margin-top: 0;
+    }
+    .clock-container iframe {
+        width: 100%;
+        height: 200px;
         border: none;
     }
 </style>
