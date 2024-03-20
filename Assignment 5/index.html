@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>jQuery Simple Slide Show</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script>
+        var images = window.location.hash.replace('#','').split(',');
+        var animation = images.pop();
+        var currentSlide = 0;
+
+        var goPrev = function(){
+            if(currentSlide == 0){
+                currentSlide = images.length - 1;
+            } else {
+                currentSlide--;
+            }
+            goToCurrentSlide();
+        }
+
+        var goToCurrentSlide = function(){
+            if(animation == 'sliding') {
+                var newMargin = currentSlide * 100;
+                $("#container").stop().animate({marginLeft: '-' + newMargin + 'vw'}, 500);
+            } else {  // FADING
+                $(".slide").fadeOut(500);
+                $(".slide").eq(currentSlide).fadeIn(500);
+            }
+            $("#numContainer a").css("color", "");
+            $($("#numContainer a")[currentSlide]).css("color", "gold");
+        }
+
+        var goNext = function(){
+            currentSlide = (currentSlide + 1) % images.length;
+            goToCurrentSlide();
+        }
+
+        function goTo(slide){
+            currentSlide = slide;
+            goToCurrentSlide();
+        }
+
+        var main = function(){
+            $("body").addClass(animation);
+            var markup = '';
+            var markup2 = '';
+            for(var i = 0; i < images.length; i++){
+                markup += '<div class="slide" style="background-image:url(' + images[i] + '"></div>';  
+                markup2 += '<a class="btn black" href="javascript:goTo(' + i + ')">' + (i+1) + '</a>';
+            }
+            document.getElementById('container').innerHTML = markup;
+            document.getElementById('numContainer').innerHTML = markup2;
+            if(animation == 'sliding'){
+                document.getElementById('container').style.width = images.length * 100 + 'vw';
+            } else { // FADING
+                $(".slide").hide();
+                $(".slide").eq(0).show();
+            }
+            goToCurrentSlide();
+        }
+    </script>
+</head>
+<body onload="main()">
+    <a style='position:fixed;left:10px;top:calc(50% - 28px)' href="javascript:goPrev()" class="btn-floating btn-large waves-effect waves-light black"><i class="material-icons">arrow_back</i></a>
+    <a style='position:fixed;right:10px;top:calc(50% - 28px)'  href="javascript:goNext()" class="btn-floating btn-large waves-effect waves-light black"><i class="material-icons">arrow_forward</i></a>
+    <div id="container" style="text-align:center"> </div>    
+    <div id="numContainer" style="text-align:center; display:block;position:fixed;width:100vw;bottom:10px"> </div>    
+</body>
+
+<style>
+    body {
+        margin: 0;
+        background-color: black;
+        overflow: hidden;
+    }
+    #container {
+        display: block;
+        position: absolute;
+        height: 100vh;
+        width: 100vw;
+        top:0;
+        overflow: hidden;
+    }
+    .slide {
+        display: block;
+        position: absolute;
+        height: 100vh;
+        width: 100vw;
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    body.sliding .slide {
+        display: inline-block;
+        max-width: 100vw;
+        position: relative;
+    }
+    body.fading .slide {
+        display: none;
+    }
+</style>
+</html>
