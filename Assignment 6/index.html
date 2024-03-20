@@ -27,17 +27,25 @@
                 $('.select-dropdown.dropdown-trigger').click();
             }
 
-            function makeClocklist(timezones){
-            var markup = '';
-            for(var i = 0; i < timezones.length; i++){
-                var tz = timezones[i].split('_');
-                var tzOffset = tz[0];
-                var tzName = $('#timezone option[value="' + timezones[i] + '"]').text();
-                markup += "<button class='btn white' style='width:100%;height:100px'><div>" + tzName + "</div><iframe src='./clock.html#" + tzOffset + "'></iframe></button>";
+            function makeClocklist(timezones) {
+                var markup = '';
+                for (var i = 0; i < timezones.length; i++) {
+                    var tz = timezones[i].split('_');
+                    var tzOffset = tz[0];
+                    var tzName = document.getElementById('timezone').options[document.getElementById('timezone').selectedIndex].text;
+                    
+                    var currentTime = new Date(Date.now() + tzOffset * 60 * 60 * 1000);
+                    var hours = currentTime.getHours().toString().padStart(2, '0');
+                    var minutes = currentTime.getMinutes().toString().padStart(2, '0');
+                    var seconds = currentTime.getSeconds().toString().padStart(2, '0');
+                    var timeString = hours + ':' + minutes + ':' + seconds;
+            
+                    markup += "<button class='btn white' style='width:100%;height:100px'> <div>" + tzName + "</div> <div>" + timeString + "</div> <iframe src='./clock.html#" + tzOffset + "'></iframe></button>";
+                }
+                var clockList = document.getElementById('clockList');
+                clockList.innerHTML = markup;
             }
-            var clockList = document.getElementById('clockList');
-            clockList.innerHTML = markup;
-        }
+
 
         </script>
     </head>
