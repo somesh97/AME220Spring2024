@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JavaScript Slideshow</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body {
+            margin: 0;
+            background-color: black;
+        }
+        #prevBtn {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        #nextBtn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        #result {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="prevBtn"> Prev </button>
+    <button id="nextBtn"> Next </button>
+    <img id="result" src="" alt="Slideshow Image">
+
+    <script>
+        var images = [
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Blue_Cranes_%28Anthropoides_paradiseus%29_couple_parading_..._%2832457893122%29.jpg/214px-Blue_Cranes_%28Anthropoides_paradiseus%29_couple_parading_..._%2832457893122%29.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Double_Trouble_%284919788838%29.jpg/120px-Double_Trouble_%284919788838%29.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Japanse_kraanvogels_in_Akan_International_Crane_Centre%2C_-24_februari_2012_a.jpg/103px-Japanse_kraanvogels_in_Akan_International_Crane_Centre%2C_-24_februari_2012_a.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Beautiful_grey_crowned_crane_pair.jpg/231px-Beautiful_grey_crowned_crane_pair.jpg'
+        ];
+
+        var currentIndex = 0;
+        var result = document.getElementById('result');
+        var prevBtn = document.getElementById('prevBtn');
+        var nextBtn = document.getElementById('nextBtn');
+
+        function updateImage() {
+            result.src = images[currentIndex];
+        }
+
+        prevBtn.addEventListener('click', function() {
+            currentIndex = (currentIndex === 0) ? images.length - 1 : currentIndex - 1;
+            updateImage();
+        });
+
+        nextBtn.addEventListener('click', function() {
+            currentIndex = (currentIndex === images.length - 1) ? 0 : currentIndex + 1;
+            updateImage();
+        });
+
+        // Show the first image initially
+        updateImage();
+    </script>
+</body>
+</html>
