@@ -195,29 +195,29 @@ var load = function() {
 }
 
 var allWords = [];
-var wordCount = {}
+var wordCount = {};
 
 function generateCloud(data) {
-    // Split text into words and remove punctuation
-    allWords = data.replace(/[^\w\s]/g, '').toLowerCase().split(/\s+/);
-
-    for (var i = 0; i < allWords.length; i++) {
-        var word = allWords[i];
+    allWords = data.match(/\b\w+\b/g);   // Get all words in the document
+   
+    for(var i = 0; i < allWords.length; i++) {
+        var word = allWords[i].toLowerCase();
         if (word.length > 5) {
-            wordCount[word] = (wordCount[word] || 0) + 1;
+            wordCount[word] = (wordCount[word] || 0) + 1; // Count the frequency of each word
         }
     }
 
+    var maxCount = Math.max(...Object.values(wordCount)); // Get the maximum frequency
+
     var output = "";
-    for (var word in wordCount) {
-        if (wordCount.hasOwnProperty(word)) {
-            // Generate word cloud based on word frequency
-            output += "<span style='font-size:" + (wordCount[word] * 10) + "px'>" + word + " </span>";
-        }
+    for(var word in wordCount) {
+        var fontSize = Math.ceil((wordCount[word] / maxCount) * 30) + 10; // Calculate font size based on frequency
+        output += "<span style='font-size: " + fontSize + "px;'>" + word + "</span> ";
     }
 
     document.getElementById('cloud').innerHTML = output;
 }
+
 </script>
 
 </head>
