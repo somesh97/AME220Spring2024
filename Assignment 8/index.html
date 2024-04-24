@@ -189,40 +189,34 @@ function loadData(url, callback)
     }
 }
 
-var load = function()
-{
-	ENV.initialize();
-  loadData("./dream.txt",generateCloud);
+var load = function() {
+    ENV.initialize();
+    loadData("./Dream.txt", generateCloud); // Adjust file name to match your text file
 }
-
 
 var allWords = [];
 var wordCount = {}
 
+function generateCloud(data) {
+    // Split text into words and remove punctuation
+    allWords = data.replace(/[^\w\s]/g, '').toLowerCase().split(/\s+/);
 
+    for (var i = 0; i < allWords.length; i++) {
+        var word = allWords[i];
+        if (word.length > 5) {
+            wordCount[word] = (wordCount[word] || 0) + 1;
+        }
+    }
 
-function generateCloud(data) 
-{
-   allWords = data.match(/\b\w+\b/g);   //get all words in the document
-   
-   for(var i = 0; i < allWords.length; i = i + 1){
-      allWords[i] = allWords[i].toLowerCase();
-      var num = allWords[i];
-      if(num.length>5){
-        wordCount[num] = wordCount[num] ? wordCount[num]+1 : 1;
-      }
-   }
+    var output = "";
+    for (var word in wordCount) {
+        if (wordCount.hasOwnProperty(word)) {
+            // Generate word cloud based on word frequency
+            output += "<span style='font-size:" + (wordCount[word] * 10) + "px'>" + word + " </span>";
+        }
+    }
 
-   var theWords = Object.keys(wordCount); // all words over 5 characters
-
-   var output = "";
-   for(var i = 0; i < theWords.length; i = i + 1){
-     // code here  --- us the wordCount object to generate a word cloud of words that occur more than once.
-     output += "<span>" + theWords[i] + " </span>"
-   }
-
-   
-   document.getElementById('cloud').innerHTML = output;
+    document.getElementById('cloud').innerHTML = output;
 }
 </script>
 
