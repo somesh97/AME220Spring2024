@@ -19,6 +19,7 @@
   -ms-transition-duration: .2s;
   -webkit-transition-duration: .2s;
   transition-duration: .2s;
+  color: blue; /* Font color for the word cloud */
 }
 
 #cloud {
@@ -173,7 +174,7 @@ function loadData(url, callback) {
 
 var load = function() {
     ENV.initialize();
-    loadData("./dream.txt", generateCloud);
+    loadData("../dream.txt", generateCloud);
 }
 
 var allWords = [];
