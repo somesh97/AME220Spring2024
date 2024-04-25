@@ -181,23 +181,33 @@ var allWords = [];
 var wordCount = {}
 
 function generateCloud(data) {
-    allWords = data.match(/\b\w+\b/g);   //get all words in the document
-   
-    for(var i = 0; i < allWords.length; i++) {
-        allWords[i] = allWords[i].toLowerCase();
-        var num = allWords[i];
-        if(num.length > 5){
-            wordCount[num] = wordCount[num] ? wordCount[num] + 1 : 1;
+    // Split the text into paragraphs
+    var paragraphs = data.split('\n\n');
+
+    // Process each paragraph separately
+    paragraphs.forEach(function(paragraph) {
+        // Get all words in the paragraph
+        var words = paragraph.match(/\b\w+\b/g);
+
+        // Count word occurrences
+        if (words) {
+            words.forEach(function(word) {
+                var lowercaseWord = word.toLowerCase();
+                if (lowercaseWord.length > 5) {
+                    wordCount[lowercaseWord] = wordCount[lowercaseWord] ? wordCount[lowercaseWord] + 1 : 1;
+                }
+            });
         }
-    }
+    });
 
-    var theWords = Object.keys(wordCount); // all words over 5 characters
-
+    // Generate word cloud HTML
+    var theWords = Object.keys(wordCount);
     var output = "";
     for(var i = 0; i < theWords.length; i++) {
         output += "<span>" + theWords[i] + " </span>"
     }
 
+    // Display word cloud
     document.getElementById('cloud').innerHTML = output;
 }
 </script>
