@@ -180,12 +180,12 @@ var load = function() {
 var allWords = [];
 var wordCount = {}
 
-var allWords = [];
-var wordCount = {}
-
 function generateCloud(data) {
     // Split the text into paragraphs
     var paragraphs = data.split('\n\n');
+
+    // Initialize an empty array to store word objects
+    var wordObjects = [];
 
     // Process each paragraph separately
     paragraphs.forEach(function(paragraph) {
@@ -197,22 +197,31 @@ function generateCloud(data) {
             words.forEach(function(word) {
                 var lowercaseWord = word.toLowerCase();
                 if (lowercaseWord.length > 5) {
-                    wordCount[lowercaseWord] = wordCount[lowercaseWord] ? wordCount[lowercaseWord] + 1 : 1;
+                    // Update word count or create a new word object
+                    if (wordObjects.some(obj => obj.word === lowercaseWord)) {
+                        var existingWord = wordObjects.find(obj => obj.word === lowercaseWord);
+                        existingWord.count++;
+                    } else {
+                        wordObjects.push({ word: lowercaseWord, count: 1 });
+                    }
                 }
             });
         }
     });
 
+    // Sort word objects by count (descending order)
+    wordObjects.sort((a, b) => b.count - a.count);
+
     // Generate word cloud HTML
-    var theWords = Object.keys(wordCount);
     var output = "";
-    for(var i = 0; i < theWords.length; i++) {
-        output += "<span>" + theWords[i] + " </span>"
-    }
+    wordObjects.slice(0, 20).forEach(function(obj) {
+        output += `<span style="font-size: ${obj.count * 2}px">${obj.word} </span>`;
+    });
 
     // Display word cloud
     document.getElementById('cloud').innerHTML = output;
 }
+
 </script>
 </head>
 
