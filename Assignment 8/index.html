@@ -180,12 +180,12 @@ var load = function() {
 var allWords = [];
 var wordCount = {}
 
-function generateCloud(data) {
+  function generateCloud(data) {
     // Split the text into paragraphs
     var paragraphs = data.split('\n\n');
 
-    // Initialize an empty array to store word objects
-    var wordObjects = [];
+    // Initialize an empty object to store word frequencies
+    var wordFrequencies = {};
 
     // Process each paragraph separately
     paragraphs.forEach(function(paragraph) {
@@ -197,25 +197,23 @@ function generateCloud(data) {
             words.forEach(function(word) {
                 var lowercaseWord = word.toLowerCase();
                 if (lowercaseWord.length > 5) {
-                    // Update word count or create a new word object
-                    if (wordObjects.some(obj => obj.word === lowercaseWord)) {
-                        var existingWord = wordObjects.find(obj => obj.word === lowercaseWord);
-                        existingWord.count++;
-                    } else {
-                        wordObjects.push({ word: lowercaseWord, count: 1 });
-                    }
+                    // Update word frequency or initialize it
+                    wordFrequencies[lowercaseWord] = (wordFrequencies[lowercaseWord] || 0) + 1;
                 }
             });
         }
     });
 
-    // Sort word objects by count (descending order)
-    wordObjects.sort((a, b) => b.count - a.count);
+    // Sort word frequencies by count (descending order)
+    var sortedWords = Object.keys(wordFrequencies).sort(function(a, b) {
+        return wordFrequencies[b] - wordFrequencies[a];
+    });
 
     // Generate word cloud HTML
     var output = "";
-    wordObjects.slice(0, 20).forEach(function(obj) {
-        output += `<span style="font-size: ${obj.count * 2}px">${obj.word} </span>`;
+    sortedWords.slice(0, 20).forEach(function(word) {
+        var fontSize = Math.min(24, wordFrequencies[word] * 2); // Limit font size
+        output += `<span style="font-size: ${fontSize}px">${word} </span>`;
     });
 
     // Display word cloud
