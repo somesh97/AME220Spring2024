@@ -1,231 +1,155 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Word Cloud</title>
-<meta name='viewport' content-width="device-width" user-scalable='no' initial-scale='1' maximum-scale='1'>
+    <title>Word Cloud</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <style>
+        .touch #cloud span:active,
+        .mouse #cloud span:hover {
+            background-color: black;
+            color: white;
+        }
 
-<style>
-.touch #cloud span:active, .mouse #cloud span:hover {
-  background-color: black;
-  color: white;
-}
+        #cloud span {
+            padding: 5px;
+            border-radius: 10px;
+            cursor: pointer;
+            -moz-transition-duration: .2s;
+            -o-transition-duration: .2s;
+            -ms-transition-duration: .2s;
+            -webkit-transition-duration: .2s;
+            transition-duration: .2s;
+        }
 
-#cloud span {
-  padding: 5px;
-  border-radius: 10px;
-  cursor: pointer;
-  -moz-transition-duration: .2s;
-  -o-transition-duration: .2s;
-  -ms-transition-duration: .2s;
-  -webkit-transition-duration: .2s;
-  transition-duration: .2s;
-  color: blue; /* Font color for the word cloud */
-}
+        #cloud {
+            height: auto;
+            min-height: 300px;
+            display: block;
+            border: 1px dashed gray;
+            border-radius: 10px;
+            margin: auto;
+            margin-top: 20px;
+            width: 80%;
+            padding: 15px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
 
-#cloud {
-  height: auto;
-  min-height: 300px;
-  display: block;
-  border: 1px dashed gray;
-  border-radius: 10px;
-  margin:auto;
-  margin-top: 20px;
-  width: 80%;
-  padding:15px;
-  -webkit-user-select: none;
-  user-select: none;
-}
+        h1 {
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+    <!-- Reference local jQuery file -->
+    <script src="jquery-2.1.3.js"></script>
+    <script>
+        var allWords = [];
+        var wordCount = {};
 
-h1 {
-  width: 100%;
-  text-align: center;
-}
-</style>
+        // Function to initialize environment variables
+        var ENV = {
+            device: {
+                iOS: null,
+                iPhone: null,
+                iPad: null,
+                android: null,
+                mouse: null,
+                touch: null
+            },
+            screen: {
+                height: null,
+                width: null,
+                big: null,
+                small: null
+            },
+            initialize: function () {
+                var ua = window.navigator.userAgent.toLowerCase();
+                if (ua.indexOf('iphone') >= 0 || ua.indexOf('ipad') >= 0) {
+                    ENV.device.iOS = true;
+                    ENV.device.iPhone = ua.indexOf('iphone') >= 0;
+                    ENV.device.iPad = !ENV.device.iPhone;
+                } else {
+                    ENV.device.iOS = false;
+                    ENV.device.iPhone = false;
+                    ENV.device.iPad = false;
+                }
 
-<script src="./jquery-2.1.3.js"></script>
+                ENV.device.android = ua.indexOf('android') >= 0;
+                ENV.device.touch = ENV.device.iOS || ENV.device.android;
+                ENV.device.mouse = !ENV.device.touch;
 
-<script>
-var ENV = {
-    device: {
-        iOS: null,
-        iPhone: null,
-        iPad: null,
-        android: null,
-        mouse: null,
-        touch: null
-    },
-    screen:{
-        height:null,
-        width:null,
-        big: null,
-        small: null
-    },
-    initialize: function(){
-        var ua = window.navigator.userAgent.toLowerCase();
-        if(ua.indexOf('iphone') >=0 || ua.indexOf('ipad') >=0 ){
-            ENV.device.iOS = true;
-            if(ua.indexOf('iphone') >=0){
-                ENV.device.iPhone = true;
-                ENV.device.iPad = false;
-            }
-            else{
-                ENV.device.iPhone = false;
-                ENV.device.iPad = true;              
-            }
+                ENV.screen.height = ENV.device.android ? window.innerHeight : $(window).height();
+                ENV.screen.width = ENV.device.android ? window.innerWidth : $(window).width();
 
-        } 
-        else{
-            ENV.device.iOS = false; 
-            ENV.device.iPhone = false;
-            ENV.device.iPad = false;        
-        }
-        
-        
-        if(ua.indexOf('android') >=0){
-            ENV.device.android = true;          
-        }
-        else{
-            ENV.device.android = false;          
-        }
-        
-        if(ENV.device.iOS || ENV.device.android){
-            ENV.device.touch = true;
-            ENV.device.mouse = false;
-        }
-        else{
-            ENV.device.touch = false;
-            ENV.device.mouse = true;
-        }
-        
-        if(!ENV.device.android){
-            ENV.screen.height = $(window).height();
-            ENV.screen.width = $(window).width();
-        }
-        else{
-            ENV.screen.height = window.innerHeight;
-            ENV.screen.width = window.innerWidth;
-        }
-        
-        if(ENV.screen.width > 1024){
-            ENV.screen.big = true;
-            ENV.screen.small = false;
-        }
-        else{
-            ENV.screen.big = false;
-            ENV.screen.small = true;
-        }
-        
-        var docClassName = "";
-        if(ENV.screen.big){
-            docClassName = docClassName + " big";
-        }
-        else{
-            docClassName = docClassName + " small";
-        }
-        if(ENV.device.touch){
-            docClassName = docClassName + " touch";
-        }
-        else{
-            docClassName = docClassName + " mouse";
-        }
-        
-        document.getElementsByTagName("html")[0].className = docClassName;
-    }
-}
+                ENV.screen.big = ENV.screen.width > 1024;
+                ENV.screen.small = !ENV.screen.big;
 
-function getXMLHTTPRequest() {
-    var request;
-    try{
-        request = new ActiveXObject("Microsoft.XMLHTTP");
-    } catch(ex1){
-        try{
-            request = new ActiveXObject("Msxml2.XMLHTTP");
-        } catch(ex2){
-            request = null;
-        }
-    }
-
-    if(!request && typeof XMLHttpRequest != "undefined"){
-        request = new XMLHttpRequest();
-    }
-
-    return request;
-}
-
-function loadData(url, callback) {
-    var aXMLHttpRequest = getXMLHTTPRequest();
-    var allData;
-
-    if (aXMLHttpRequest) {
-        aXMLHttpRequest.open("GET", url, true);
-    
-        aXMLHttpRequest.onreadystatechange = function (aEvt) {
-            if(aXMLHttpRequest.readyState == 4){
-                allData = aXMLHttpRequest.responseText;
-                callback(allData);
+                document.getElementsByTagName("html")[0].className =
+                    (ENV.screen.big ? "big" : "small") + " " +
+                    (ENV.device.touch ? "touch" : "mouse");
             }
         };
-    
-        aXMLHttpRequest.send(null);
-    } else {
-        alert("A problem occurred instantiating the XMLHttpRequest object.");
-    }
-}
 
-var load = function() {
-    ENV.initialize();
-    loadData("happy.txt", generateCloud);
-}
-
-var allWords = [];
-var wordCount = {}
-
-  function generateCloud(data) {
-    // Split the text into paragraphs
-    var paragraphs = data.split('\n\n');
-
-    // Initialize an empty object to store word frequencies
-    var wordFrequencies = {};
-
-    // Process each paragraph separately
-    paragraphs.forEach(function(paragraph) {
-        // Get all words in the paragraph
-        var words = paragraph.match(/\b\w+\b/g);
-
-        // Count word occurrences
-        if (words) {
-            words.forEach(function(word) {
-                var lowercaseWord = word.toLowerCase();
-                if (lowercaseWord.length > 5) {
-                    // Update word frequency or initialize it
-                    wordFrequencies[lowercaseWord] = (wordFrequencies[lowercaseWord] || 0) + 1;
+        function getXMLHTTPRequest() {
+            var request;
+            try {
+                request = new ActiveXObject("Microsoft.XMLHTTP");
+            } catch (ex1) {
+                try {
+                    request = new ActiveXObject("Msxml2.XMLHTTP");
+                } catch (ex2) {
+                    request = null;
                 }
-            });
+            }
+            if (!request && typeof XMLHttpRequest != "undefined") {
+                request = new XMLHttpRequest();
+            }
+            return request;
         }
-    });
 
-    // Sort word frequencies by count (descending order)
-    var sortedWords = Object.keys(wordFrequencies).sort(function(a, b) {
-        return wordFrequencies[b] - wordFrequencies[a];
-    });
+        function loadData(url, callback) {
+            var xhr = getXMLHTTPRequest();
+            if (xhr) {
+                xhr.open("GET", url, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        callback(xhr.responseText);
+                    }
+                };
+                xhr.send();
+            } else {
+                alert("XMLHttpRequest not supported by your browser!");
+            }
+        }
 
-    // Generate word cloud HTML
-    var output = "";
-    sortedWords.slice(0, 20).forEach(function(word) {
-        var fontSize = Math.min(24, wordFrequencies[word] * 2); // Limit font size
-        output += `<span style="font-size: ${fontSize}px">${word} </span>`;
-    });
+        // Load data and generate word cloud
+        var load = function () {
+            ENV.initialize();
+            loadData("dream.txt", generateCloud);
+        };
 
-    // Display word cloud
-    document.getElementById('cloud').innerHTML = output;
-}
-
-
-</script>
+        // Function to generate word cloud
+        function generateCloud(data) {
+            allWords = data.match(/\b\w+\b/g); // Get all words in the document
+            for (var i = 0; i < allWords.length; i++) {
+                var word = allWords[i].toLowerCase();
+                if (word.length > 5) {
+                    wordCount[word] = wordCount[word] ? wordCount[word] + 1 : 1;
+                }
+            }
+            var sortedWords = Object.keys(wordCount).sort(function (a, b) {
+                return wordCount[b] - wordCount[a];
+            });
+            var output = "";
+            for (var i = 0; i < sortedWords.length; i++) {
+                output += "<span style='font-size:" + (10 + wordCount[sortedWords[i]] * 5) + "px'>" + sortedWords[i] + " </span>";
+            }
+            document.getElementById('cloud').innerHTML = output;
+        }
+    </script>
 </head>
-
-<body onload='load()'> <!-- load starts execution after body loads -->
-<h1>Word Cloud</h1>
-<div id='cloud'></div>
+<body onload="load()">
+    <h1>Word Cloud</h1>
+    <div id="cloud"></div>
 </body>
 </html>
