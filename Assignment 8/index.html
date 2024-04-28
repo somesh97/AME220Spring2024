@@ -1,155 +1,234 @@
-<!DOCTYPE html>
 <html>
 <head>
-    <title>Word Cloud</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <style>
-        .touch #cloud span:active,
-        .mouse #cloud span:hover {
-            background-color: black;
-            color: white;
-        }
+<title>
+   Word Cloud
+</title>
 
-        #cloud span {
-            padding: 5px;
-            border-radius: 10px;
-            cursor: pointer;
-            -moz-transition-duration: .2s;
-            -o-transition-duration: .2s;
-            -ms-transition-duration: .2s;
-            -webkit-transition-duration: .2s;
-            transition-duration: .2s;
-        }
+<meta name='viewport' content-width="device-width" user-scalable='no' initial-scale='1' maximum-scale='1'>
 
-        #cloud {
-            height: auto;
-            min-height: 300px;
-            display: block;
-            border: 1px dashed gray;
-            border-radius: 10px;
-            margin: auto;
-            margin-top: 20px;
-            width: 80%;
-            padding: 15px;
-            -webkit-user-select: none;
-            user-select: none;
-        }
+<style>
+.touch #cloud span:active, .mouse #cloud span:hover{
+  background-color: black;
+  color: white;
+}
 
-        h1 {
-            width: 100%;
-            text-align: center;
-        }
-    </style>
-    <!-- Reference local jQuery file -->
-    <script src="jquery-2.1.3.js"></script>
-    <script>
-        var allWords = [];
-        var wordCount = {};
+#cloud span{
+  padding: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+  -moz-transition-duration: .2s;
+  -o-transition-duration: .2s;
+  -ms-transition-duration: .2s;
+  -webkit-transition-duration: .2s;
+  transition-duration: .2s;
+}
 
-        // Function to initialize environment variables
-        var ENV = {
-            device: {
-                iOS: null,
-                iPhone: null,
-                iPad: null,
-                android: null,
-                mouse: null,
-                touch: null
-            },
-            screen: {
-                height: null,
-                width: null,
-                big: null,
-                small: null
-            },
-            initialize: function () {
-                var ua = window.navigator.userAgent.toLowerCase();
-                if (ua.indexOf('iphone') >= 0 || ua.indexOf('ipad') >= 0) {
-                    ENV.device.iOS = true;
-                    ENV.device.iPhone = ua.indexOf('iphone') >= 0;
-                    ENV.device.iPad = !ENV.device.iPhone;
+#cloud{
+	height: auto;
+	min-height: 300px;
+	display: block;
+  border: 1px dashed gray;
+  border-radius: 10px;
+  margin:auto;
+  margin-top: 20px;
+  width: 80%;
+  padding:15px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+h1{
+  width: 100%;
+  text-align: center;
+}
+</style>
+
+<script src="./jquery-2.1.3.js"></script>
+
+<script>
+
+var ENV = {
+	device: {
+		iOS: null,
+		iPhone: null,
+		iPad: null,
+		android: null,
+		mouse: null,
+		touch: null
+	},
+	screen:{
+		height:null,
+		width:null,
+		big: null,
+		small: null
+	},
+	initialize: function(){
+		var ua = window.navigator.userAgent.toLowerCase();
+		if(ua.indexOf('iphone') >=0 || ua.indexOf('ipad') >=0 ){
+			ENV.device.iOS = true;
+			if(ua.indexOf('iphone') >=0){
+				ENV.device.iPhone = true;
+				ENV.device.iPad = false;
+			}
+			else{
+				ENV.device.iPhone = false;
+				ENV.device.iPad = true;				
+			}
+
+		} 
+		else{
+			ENV.device.iOS = false;	
+			ENV.device.iPhone = false;
+			ENV.device.iPad = false;		
+		}
+		
+		
+		if(ua.indexOf('android') >=0){
+			ENV.device.android = true;			
+		}
+		else{
+			ENV.device.android = false;			
+		}
+		
+		if(ENV.device.iOS || ENV.device.android){
+			ENV.device.touch = true;
+			ENV.device.mouse = false;
+		}
+		else{
+			ENV.device.touch = false;
+			ENV.device.mouse = true;
+		}
+		
+		if(!ENV.device.android){
+			ENV.screen.height = $(window).height();
+			ENV.screen.width = $(window).width();
+		}
+		else{
+			ENV.screen.height = window.innerHeight;
+			ENV.screen.width = window.innerWidth;
+		}
+		
+		if(ENV.screen.width > 1024){
+			ENV.screen.big = true;
+			ENV.screen.small = false;
+		}
+		else{
+			ENV.screen.big = false;
+			ENV.screen.small = true;
+		}
+		
+		var docClassName = "";
+		if(ENV.screen.big){
+			docClassName = docClassName + " big";
+		}
+		else{
+			docClassName = docClassName + " small";
+		}
+		if(ENV.device.touch){
+			docClassName = docClassName + " touch";
+		}
+		else{
+			docClassName = docClassName + " mouse";
+		}
+		
+		/*
+			var x = document.getElementsByTagName("html");
+			var htmltagobj = x[0]
+			htmltagobj.className = docClassName;
+		*/
+		document.getElementsByTagName("html")[0].className = docClassName;
+	}
+}
+
+function getXMLHTTPRequest()
+{
+    var request;
+    // Lets try using ActiveX to instantiate the XMLHttpRequest object
+    try{
+        request = new ActiveXObject("Microsoft.XMLHTTP");
+    }catch(ex1){
+    try{
+        request = new ActiveXObject("Msxml2.XMLHTTP");
+    }catch(ex2){
+        request = null;
+    }
+                                            }
+
+    // If the previous didn't work, lets check if the browser natively support XMLHttpRequest 
+    if(!request && typeof XMLHttpRequest != "undefined"){
+    //The browser does, so lets instantiate the object
+        request = new XMLHttpRequest();
+    }
+
+    return request;
+}
+
+function loadData(url, callback) {
+    var xhr = getXMLHTTPRequest();
+    if (xhr) {
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    // Debugging: Alert the received data
+                    alert("Received data: " + xhr.responseText);
+                    callback(xhr.responseText);
                 } else {
-                    ENV.device.iOS = false;
-                    ENV.device.iPhone = false;
-                    ENV.device.iPad = false;
+                    // Debugging: Alert the status if request fails
+                    alert("Failed to fetch data. Status: " + xhr.status);
                 }
-
-                ENV.device.android = ua.indexOf('android') >= 0;
-                ENV.device.touch = ENV.device.iOS || ENV.device.android;
-                ENV.device.mouse = !ENV.device.touch;
-
-                ENV.screen.height = ENV.device.android ? window.innerHeight : $(window).height();
-                ENV.screen.width = ENV.device.android ? window.innerWidth : $(window).width();
-
-                ENV.screen.big = ENV.screen.width > 1024;
-                ENV.screen.small = !ENV.screen.big;
-
-                document.getElementsByTagName("html")[0].className =
-                    (ENV.screen.big ? "big" : "small") + " " +
-                    (ENV.device.touch ? "touch" : "mouse");
             }
         };
+        xhr.send();
+    } else {
+        // Debugging: Alert if XMLHttpRequest is not supported
+        alert("XMLHttpRequest not supported by your browser!");
+    }
+}
 
-        function getXMLHTTPRequest() {
-            var request;
-            try {
-                request = new ActiveXObject("Microsoft.XMLHTTP");
-            } catch (ex1) {
-                try {
-                    request = new ActiveXObject("Msxml2.XMLHTTP");
-                } catch (ex2) {
-                    request = null;
-                }
-            }
-            if (!request && typeof XMLHttpRequest != "undefined") {
-                request = new XMLHttpRequest();
-            }
-            return request;
-        }
 
-        function loadData(url, callback) {
-            var xhr = getXMLHTTPRequest();
-            if (xhr) {
-                xhr.open("GET", url, true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        callback(xhr.responseText);
-                    }
-                };
-                xhr.send();
-            } else {
-                alert("XMLHttpRequest not supported by your browser!");
-            }
-        }
+var load = function()
+{
+	ENV.initialize();
+  loadData("./dream.txt",generateCloud);
+}
 
-        // Load data and generate word cloud
-        var load = function () {
-            ENV.initialize();
-            loadData("dream.txt", generateCloud);
-        };
 
-        // Function to generate word cloud
-        function generateCloud(data) {
-            allWords = data.match(/\b\w+\b/g); // Get all words in the document
-            for (var i = 0; i < allWords.length; i++) {
-                var word = allWords[i].toLowerCase();
-                if (word.length > 5) {
-                    wordCount[word] = wordCount[word] ? wordCount[word] + 1 : 1;
-                }
-            }
-            var sortedWords = Object.keys(wordCount).sort(function (a, b) {
-                return wordCount[b] - wordCount[a];
-            });
-            var output = "";
-            for (var i = 0; i < sortedWords.length; i++) {
-                output += "<span style='font-size:" + (10 + wordCount[sortedWords[i]] * 5) + "px'>" + sortedWords[i] + " </span>";
-            }
-            document.getElementById('cloud').innerHTML = output;
-        }
-    </script>
+var allWords = [];
+var wordCount = {}
+
+
+
+function generateCloud(data) 
+{
+   allWords = data.match(/\b\w+\b/g);   //get all words in the document
+   
+   for(var i = 0; i < allWords.length; i = i + 1){
+      allWords[i] = allWords[i].toLowerCase();
+      var num = allWords[i];
+      if(num.length>5){
+        wordCount[num] = wordCount[num] ? wordCount[num]+1 : 1;
+      }
+   }
+
+   var theWords = Object.keys(wordCount); // all words over 5 characters
+
+   var output = "";
+   for(var i = 0; i < theWords.length; i = i + 1){
+     // code here  --- us the wordCount object to generate a word cloud of words that occur more than once.
+     output += "<span>" + theWords[i] + " </span>"
+   }
+
+   
+   document.getElementById('cloud').innerHTML = output;
+}
+</script>
+
 </head>
-<body onload="load()">
-    <h1>Word Cloud</h1>
-    <div id="cloud"></div>
+
+<body onload='load()'> <!-- load starts execution after body loads -->
+<h1> Word Cloud </h1>
+<div id='cloud'> </div>
 </body>
+
 </html>
