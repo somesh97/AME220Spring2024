@@ -163,34 +163,36 @@ function getXMLHTTPRequest()
     return request;
 }
 
-function loadData(url, callback) {
-    var xhr = getXMLHTTPRequest();
-    if (xhr) {
-        xhr.open("GET", url, true);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
-                if (xhr.status == 200) {
-                    // Debugging: Alert the received data
-                    alert("Received data: " + xhr.responseText);
-                    callback(xhr.responseText);
-                } else {
-                    // Debugging: Alert the status if request fails
-                    alert("Failed to fetch data. Status: " + xhr.status);
-                }
+function loadData(url, callback)
+{
+    var aXMLHttpRequest = getXMLHTTPRequest();
+    var allData;
+
+    if (aXMLHttpRequest)
+    {
+        aXMLHttpRequest.open("GET", url, true);
+    
+        aXMLHttpRequest.onreadystatechange = function (aEvt) {
+            if(aXMLHttpRequest.readyState == 4){
+                allData = aXMLHttpRequest.responseText;
+                callback(allData)
             }
         };
-        xhr.send();
-    } else {
-        // Debugging: Alert if XMLHttpRequest is not supported
-        alert("XMLHttpRequest not supported by your browser!");
+    
+        //Lets fire off the request
+        aXMLHttpRequest.send(null);
+    }
+    else
+    {
+        //Oh no, the XMLHttpRequest object couldn't be instantiated.
+        alert("A problem occurred instantiating the XMLHttpRequest object.");
     }
 }
-
 
 var load = function()
 {
 	ENV.initialize();
-  loadData("dream.txt",generateCloud);
+  loadData("./dream.txt",generateCloud);
 }
 
 
@@ -215,8 +217,13 @@ function generateCloud(data)
 
    var output = "";
    for(var i = 0; i < theWords.length; i = i + 1){
-     // code here  --- us the wordCount object to generate a word cloud of words that occur more than once.
-     output += "<span>" + theWords[i] + " </span>"
+     // Adjust font size based on word frequency
+     var fontSize = Math.min(10 + wordCount[theWords[i]] * 5, 40); // Limiting font size between 10 and 40
+     // Adjust color based on word frequency
+     var color = "rgb(0, " + (255 - wordCount[theWords[i]] * 5) + ", 0)"; // More frequent words will be closer to red
+     
+     // Generate HTML markup for each word with appropriate styling
+     output += "<span style='font-size: " + fontSize + "px; color: " + color + ";'>" + theWords[i] + " </span>"
    }
 
    
